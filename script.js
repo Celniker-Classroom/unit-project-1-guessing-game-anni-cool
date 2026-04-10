@@ -12,6 +12,8 @@ const guessBtn = document.getElementById("guessBtn");
 const msg = document.getElementById("msg");
 const wins = document.getElementById("wins");
 const avgScore = document.getElementById("avgScore");
+let roundStart = 0 
+let roundTimes = [];
 const scores = [];
 
 //name input
@@ -26,12 +28,13 @@ if(enteredName){
 document.getElementById("playBtn").addEventListener("click", play);
 document.getElementById("giveUpBtn").addEventListener("click", giveUp);
 document.getElementById("guessBtn").addEventListener("click", makeGuess);
-
+document.getElementById("guess").value = "";
 document.getElementById("msg").textContent = "Welcome " + enteredName + "! Please select a difficulty level and click PLAY to start the game.";
 
 function play(){
     range = 0;
     startTime = new Date().getTime();
+    roundStart = Date.now();
     let levels = document.getElementsByName("level");
     for(let i=0; i<levels.length; i++){
         if(levels[i].checked){
@@ -60,6 +63,7 @@ function makeGuess(){
     if(guess == answer){
         msg.textContent = "Correct " + enteredName + "! It took " + guessCount + " tries.";
         updateScore(guessCount);
+        updateTimers();
         resetGame();
     }
     else if(guess < answer && Math.abs(answer - guess) <= 2){
@@ -109,7 +113,7 @@ function giveUp(){
     let score = range 
     msg.textContent = "The correct answer was " + answer + ". Better luck next time, " + enteredName + "!";
     updateScore(score);
-    endRound(1);
+    updateTimers();
     resetGame();
 }
 
@@ -151,7 +155,7 @@ function updateDate(){
 }
 
 // update time 
-function updateTime(){
+function time(){
     const now = new Date();
     let hours = now.getHours();
     let minutes = now.getMinutes();
@@ -165,26 +169,42 @@ function updateTime(){
     if(hours == 0) hours = 12;
 
     let timeString = hours + ":" + minutes + ":" + seconds + " " + ampm;
-    document.getElementById("date").textContent = text;
+    document.getElementById("time").textContent = timeString;
 }
 
 //live clock 
 updateDate();
-    setInterval(updateTime, 1000);
+    setInterval(time, 1000);
 
-function endRound(){
-    let endTime = new Date().getTime();
-    let elapsed = (endTime - startTime) / 1000;
-    times.push(elapsed);
+function updateTimers(){
+    let end = Date.now();
+    let elapsed = (end - roundStart) / 1000;
+    roundTimes.push(elapsed);
 
-    let fastestTime = Math.min(...times);
+    let fastestTime = Math.min(...roundTimes);
     fastest.textContent = "Fastest Game: " + fastestTime.toFixed(2) + " seconds";
 
     let sum = 0 
-    for(let i = 0; i < times.length; i++){
-        sum += times[i];
+    for(let i = 0; i < roundTimes.length; i++){
+        sum += roundTimes[i];
     }
 
-    let avg = sum / times.length;
+    let avg = sum / roundTimes.length;
     avgTime.textContent = "Average Time: " + avg.toFixed(2) + " seconds";
+}
+
+// leaderboard 
+
+let leaderboardScores = [];
+
+function updateLeaderboard(score){
+    leaderboardScores.push(score);
+    leaderboardScores.sort((a,b) => a - b);
+
+    const items = document.getElementsByName("leaderboard");
+
+    for(let i = 0; i < items.length; i++){
+        items[i].textContent =
+            leaderboardScores[i] !== undefined ? leaderboardScores[i] : "";
+    }
 }
