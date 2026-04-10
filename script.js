@@ -2,7 +2,6 @@
 let answer = 0;
 let guessCount = 0;
 let range= 0 
-let startTime = 0;
 const times = [];
 const fastest = document.getElementById("fastest");
 const avgTime = document.getElementById("avgTime");
@@ -33,7 +32,6 @@ document.getElementById("msg").textContent = "Welcome " + enteredName + "! Pleas
 
 function play(){
     range = 0;
-    startTime = new Date().getTime();
     roundStart = Date.now();
     let levels = document.getElementsByName("level");
     for(let i=0; i<levels.length; i++){
@@ -45,7 +43,6 @@ function play(){
   msg.textContent = enteredName + ", guess a number from 1 to " + range;
     answer = Math.floor(Math.random()*range) +1;
     guessCount = 0;
-    startTime = new Date().getTime();
 
     guessBtn.disabled = false;
     giveUpBtn.disabled = false;
@@ -118,7 +115,7 @@ function giveUp(){
 }
 
 function resetGame(){
-    guess.value = "";
+   document.getElementById("guess").value = "";
     guessBtn.disabled = true;
     giveUpBtn.disabled = true;
     playBtn.disabled = false;
@@ -157,19 +154,39 @@ function updateDate(){
 // update time 
 function time(){
     const now = new Date();
+
+    const monthNames = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    ];
+
+    let month = monthNames[now.getMonth()];
+    let day = now.getDate();
+    let year = now.getFullYear();
+
+    function suffix(d){
+        if(d >= 11 && d <= 13) return "th";
+        if(d % 10 === 1) return "st";
+        if(d % 10 === 2) return "nd";
+        if(d % 10 === 3) return "rd";
+        return "th";
+    }
+
     let hours = now.getHours();
     let minutes = now.getMinutes();
     let seconds = now.getSeconds();
 
+    let ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    if(hours === 0) hours = 12;
+
     if(minutes < 10) minutes = "0" + minutes;
     if(seconds < 10) seconds = "0" + seconds;
 
-    let ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    if(hours == 0) hours = 12;
-
     let timeString = hours + ":" + minutes + ":" + seconds + " " + ampm;
-    document.getElementById("time").textContent = timeString;
+
+    document.getElementById("date").textContent =
+        month + " " + day + suffix(day) + ", " + year + " — " + timeString;
 }
 
 //live clock 
