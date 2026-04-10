@@ -14,6 +14,9 @@ const avgScore = document.getElementById("avgScore");
 let roundStart = 0 
 let roundTimes = [];
 const scores = [];
+const wrongSound = new Audio("BEYOND.MD/freesound_community-wronganswer-37702.mp3");
+wrongSound.volume = 0.2;
+let audioContext = null;
 
 //name input
 let enteredName = prompt("Please enter your name:");
@@ -59,29 +62,80 @@ function makeGuess(){
     guessCount++;
     if(guess == answer){
         msg.textContent = "Correct " + enteredName + "! It took " + guessCount + " tries.";
+        playYaySound();
+confetti({ particleCount: 200, spread: 100 });
+confetti({ particleCount: 80, angle: 60, origin: { x: 0 } });
+confetti({ particleCount: 80, angle: 120, origin: { x: 1 } });
         updateScore(guessCount);
         updateTimers();
         resetGame();
     }
-    else if(guess < answer && Math.abs(answer - guess) <= 2){
-        msg.textContent = "Hot, but too low, try again.";
+    else {
+        playWrongSound();
+        if(guess < answer && Math.abs(answer - guess) <= 2){
+            msg.textContent = "Hot, but too low, try again.";
+        }
+        else if(guess > answer && Math.abs(answer - guess) <= 2){
+            msg.textContent = "Hot, but too high, try again.";
+        }
+        else if(guess < answer && Math.abs(answer - guess) <= 5){
+            msg.textContent = "Warm, but too low, try again.";
+        }
+        else if(guess > answer && Math.abs(answer - guess) <= 5){
+            msg.textContent = "Warm, but too high, try again.";
+        }
+        else if(guess < answer && Math.abs(answer - guess) > 5){
+            msg.textContent = "Cold and too low, try again.";
+        }
+        else if(guess > answer && Math.abs(answer - guess) > 5){
+            msg.textContent = "Cold and too high, try again.";
+        }
     }
-    else if(guess > answer && Math.abs(answer - guess) <= 2){
-        msg.textContent = "Hot, but too high, try again.";
+}
+
+function playWrongSound(){
+    wrongSound.currentTime = 0;
+    wrongSound.play();
+}
+
+function playYaySound(){
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx){
+        return;
     }
-    else if(guess < answer && Math.abs(answer - guess) <= 5){
-        msg.textContent = "Warm, but too low, try again.";
+
+    if(!audioContext){
+        audioContext = new AudioCtx();
     }
-    else if(guess > answer && Math.abs(answer - guess) <= 5){
-        msg.textContent = "Warm, but too high, try again.";
+
+    if(audioContext.state === "suspended"){
+        audioContext.resume();
     }
-    else if(guess < answer && Math.abs(answer - guess) > 5){
-        msg.textContent = "Cold and too low, try again.";
+
+    const notes = [523.25, 659.25, 783.99];
+    const now = audioContext.currentTime;
+
+    for(let i = 0; i < notes.length; i++){
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = "triangle";
+        oscillator.frequency.value = notes[i];
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        const start = now + i * 0.1;
+        const end = start + 0.2;
+
+        gainNode.gain.setValueAtTime(0.0001, start);
+        gainNode.gain.exponentialRampToValueAtTime(0.07, start + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, end);
+
+        oscillator.start(start);
+        oscillator.stop(end);
     }
-    else if(guess > answer && Math.abs(answer - guess) > 5){
-        msg.textContent = "Cold and too high, try again.";
-    }
-    }
+}
    
 
 
